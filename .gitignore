@@ -13,7 +13,7 @@ dbs/
 __pycache__/
 .vscode/
 _cache/
-*png
+
 
 _*/
 .*/
