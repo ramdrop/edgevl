@@ -1,0 +1,99 @@
+CONFIG: datt_rgb.yaml
+MODEL:
+  TYPE: dat
+  NAME: dat_plus_plus
+  PRETRAINED: "pretrained_weights/dat_pp_tiny_in1k_224.pth"
+  DAT:
+    img_size: 224
+    patch_size: 4
+    num_classes: 1000
+    expansion: 4
+    dim_stem: 64
+    dims: [64, 128, 256, 512]
+    depths: [2, 4, 18, 2]
+    stage_spec: [[N, D], [N, D, N, D], [N, D, N, D, N, D, N, D, N, D, N, D, N, D, N, D, N, D], [D, D]]
+    heads: [2, 4, 8, 16]
+    window_sizes: [7, 7, 7, 7]
+    groups: [1, 2, 4, 8]
+    use_pes: [True, True, True, True]
+    dwc_pes: [False, False, False, False]
+    strides: [8, 4, 2, 1]
+    offset_range_factor: [-1, -1, -1, -1]
+    no_offs: [False, False, False, False]
+    fixed_pes: [False, False, False, False]
+    use_dwc_mlps: [True, True, True, True]
+    use_lpus: [True, True, True, True]
+    use_conv_patches: True
+    ksizes: [9, 7, 5, 3]
+    nat_ksizes: [7, 7, 7, 7]
+    drop_rate: 0.0
+    attn_drop_rate: 0.0
+    drop_path_rate: 0.2
+    quant_bit: 8
+    clip_dim: 1024
+
+TRAIN:
+  EPOCHS: 120
+  WARMUP_EPOCHS: 0
+  BASE_LR: 5e-6
+  WEIGHT_DECAY: 1e-3
+  WARMUP_LR: 5e-7
+  MIN_LR: 5e-6
+  CLIP_GRAD: 5.0
+  LR_SCHEDULER:
+    NAME: "cosine"
+    DECAY_EPOCHS: 30
+    DECAY_RATE: 0.1
+  OPTIMIZER:
+    NAME: "adamw"
+    EPS: 1e-8
+    BETAS: [0.9, 0.999]
+    MOMENTUM: 0.9
+  CRETERION:
+    NAME: "L1"  # MSE  
+
+DATA:
+  DATASET: "eurosat"  
+  ROOT: "dbs"
+  BATCH_SIZE: 32
+  VAL_BATCH_SIZE: 32
+  DEPTH_TRANSFORM: "rgb"
+  LABEL_TYPE: "pseudo_labels"  # "gt" or "clip_vitb32"
+  IS_SUBSET: True
+  # DATASET_THRESHOLD: 0.86974
+  DATASET_THRESHOLD: 0.25
+
+
+GPU: 0
+SEED: 1
+DEBUG: False
+CLIP_MODEL: 
+  NAME: "ViT-g-14"      # "ViT-B/32"
+  PRETRAINED: "laion2b_s34b_b88k"
+
+MODAL: "rgb"  # "rgb" or "depth"
+PHASE: "train"  # "train" or "test"
+CKPT: ""
+
+# [] Weighted samples
+WEIGHTED_SAMPLE:
+  ENABLE: False
+
+# [] Mix Input
+MIX_INPUT:
+  ENABLE: False
+  NUM_MIX: 0
+
+# [] Metric Alignment during Distillation
+METRIC_ALIGNMENT: 
+  ENABLE: False
+  WEIGHT: 0.05
+  FILTER_RATIO: 0.75
+  LOSS: "TripletMarginLoss"
+  TRIPLET_MARGIN: 0.1
+
+# [] Quantization
+QUANT:
+  ENABLE: False
+  PTQ_CALIBRATE_MODEL: "rgb"   # "rgb", "depth", both
+

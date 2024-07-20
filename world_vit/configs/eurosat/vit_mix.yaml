@@ -1,0 +1,72 @@
+CONFIG: vit_mix.yaml
+FUSED_WINDOW_PROCESS: False
+
+MODEL:
+  NAME: 'ViT-B_16'
+  TYPE: "vit"
+  DROP_PATH_RATE: 0.3
+  DROP_RATE: 0.0
+  clip_dim: 1024
+  PRETRAINED: pretrained_weights/ViT-B_16-224.npz
+  QUANTIZE_VERSION: 1  
+
+
+TRAIN:
+  EPOCHS: 120
+  WARMUP_EPOCHS: 0
+  USE_CHECKPOINT: False
+  BASE_LR: 1e-4
+  WEIGHT_DECAY: 1e-3
+  WARMUP_LR: 5e-7
+  MIN_LR: 5e-6
+  CLIP_GRAD: 5.0
+  LR_SCHEDULER:
+    NAME: "cosine"
+    DECAY_EPOCHS: 30
+    DECAY_RATE: 0.1
+    MULTISTEPS: []
+    WARMUP_PREFIX: True
+  OPTIMIZER:
+    NAME: "adamw"
+    EPS: 1e-8
+    BETAS: [0.9, 0.999]
+    MOMENTUM: 0.9
+  CRETERION:
+    NAME: "L1"  # MSE  
+
+DATA:
+  DATASET: "eurosat"  
+  IMG_SIZE: 224
+  ROOT: "dbs"
+  BATCH_SIZE: 32
+  VAL_BATCH_SIZE: 32
+  DEPTH_TRANSFORM: "rgb"
+  LABEL_TYPE: "pseudo_labels"  # "gt" or "clip_vitb32"
+  IS_SUBSET: True
+  DATASET_THRESHOLD: 0.25
+
+
+GPU: 0
+SEED: 1
+CLIP_MODEL: 
+  NAME: "ViT-g-14"      # "ViT-B/32"
+  PRETRAINED: "laion2b_s34b_b88k"
+
+MODAL: "depth"  # "rgb" or "depth"
+PHASE: "train"  # "train" or "test"
+CKPT: ""
+
+# [] Mix Input
+MIX_INPUT:
+  ENABLE: True
+  NUM_MIX: 2
+  WEIGHTED: False
+
+# [] Attention
+ATTENTION:
+  ENABLE: False
+
+# [] Weighted samples
+WEIGHTED_SAMPLE:
+  ENABLE: False
+

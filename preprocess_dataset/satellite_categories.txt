@@ -1,0 +1,15 @@
+Urban or Built-up Areas
+Agriculture
+Forest
+Grassland
+Water Bodies
+Wetlands
+Desert
+Snow and Ice
+Bare Land or Barren
+Mountainous Terrain
+Coastal Zones
+Riparian Zones
+Glacial and Periglacial Landscapes
+Volcanic Features
+Urban Green Spaces

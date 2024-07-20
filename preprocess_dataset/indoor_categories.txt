@@ -1,0 +1,51 @@
+Living Room
+Kitchen
+Bedroom
+Bathroom
+Dining Room
+Home Office
+Basement
+Attic
+Office and Cubicles
+Conference Room
+Classroom
+Laboratory
+Library
+Gym/Fitness Center
+Shopping Mall
+Retail Store
+Hotel Lobby
+Hotel Room
+Restaurant
+Café
+Bar or Nightclub
+Cinema/Theater
+Airport Terminal
+Subway Station
+Train Station
+Bus Interior
+Hospital Ward
+Operating Room
+Dental Clinic
+Veterinary Clinic
+Museum
+Art Gallery
+Church
+Temple
+Mosque
+Classroom
+Lecture Hall
+Laboratory
+School Hallway
+Dormitory
+Indoor Pool
+Bowling Alley
+Arcade
+Indoor Playground
+Courthouse
+City Hall
+Police Station
+Fire Station
+Factory Floor
+Warehouse
+Server Room

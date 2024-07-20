@@ -1,0 +1,47 @@
+# if you are using a docker, run
+# apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
+
+# conda create --name t2 python=3.10.13
+# conda activate t2
+# pip install torch==2.0.0 torchvision==0.15.1 torchaudio==2.0.1
+
+timm==0.6.12
+tqdm
+PyYAML==6.0.1
+ruamel.yaml==0.17.33
+wandb
+albumentations==1.3.1
+opencv-python==4.8.1.78
+ftfy==6.1.1
+regex==2023.8.8
+einops==0.6.1
+easydict
+numpy
+absl-py>=0.7.0
+scipy
+sphinx_glpi_theme
+prettytable
+pyyaml
+# pytorch_metric_learning==2.3.0
+ipykernel
+rich
+pandas
+wandb
+ipdb
+open_clip_torch
+matplotlib
+
+torchprofile
+git+https://github.com/zhijian-liu/torchpack.git@3a5a9f7ac665444e1eb45942ee3f8fc7ffbd84e5
+transformers
+onnx
+onnxsim
+onnxruntime
+git+https://github.com/alibaba/TinyNeuralNetwork.git
+git+https://github.com/facebookresearch/segment-anything.git
+
+# pip3 install natten==0.14.6 -f https://shi-labs.com/natten/wheels/cu118/torch2.0.0/index.html 
+# pip install pytorch-quantization==2.1.2 --index-url https://pypi.nvidia.com 
+
+#vit
+ml-collections

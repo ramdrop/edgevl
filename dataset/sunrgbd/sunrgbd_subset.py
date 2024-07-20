@@ -1,0 +1,163 @@
+#%%
+from glob import glob
+from os.path import basename, dirname, exists, join, splitext
+
+import numpy as np
+import torchvision.transforms as T
+from PIL import Image
+from torch.utils.data import DataLoader
+import albumentations as A
+import cv2
+import pandas as pd
+
+
+
+
+# shared_transform = A.Compose([A.RandomResizedCrop(height=224, width=224, scale=(0.08, 1.0), ratio=(0.75, 1.3333), interpolation=cv2.INTER_CUBIC), A.HorizontalFlip(p=0.5)], additional_targets={'image_depth': 'image'})
+# rgb_transform = A.Compose([A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))])
+# depth_transform = A.Compose([A.NoOp()])
+
+# test_shared_transform = A.Compose([A.Resize(256, 256, interpolation=cv2.INTER_CUBIC), A.CenterCrop(224, 224)], additional_targets={'image_depth': 'image'})
+# test_rgb_transform = A.Compose([A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))])
+# test_depth_transform = A.Compose([A.NoOp()])
+
+def convert_string(string):
+    # Replace underscores with spaces
+    converted_string = string.replace("_", " ")
+    return converted_string
+
+def determine_prefix(string):
+    vowels = ['a', 'e', 'i', 'o', 'u']
+
+    if string[0] in vowels:
+        return "an " + string
+    else:
+        return "a " + string
+
+
+class SUNRGBD_SUBSET:
+
+    class_id_to_name = {
+        0: "bathroom",
+        1: "bedroom",
+        2: "classroom",
+        3: "computer_room",
+        4: "conference_room",
+        5: "corridor",
+        6: "dining_area",
+        7: "dining_room",
+        8: "discussion_area",
+        9: "furniture_store",
+        10: "home_office",
+        11: "kitchen",
+        12: "lab",
+        13: "lecture_theatre",
+        14: "library",
+        15: "living_room",
+        16: "office",
+        17: "rest_space",
+        18: "study_space"
+        }
+    class_name_to_id = {v: k for k, v in class_id_to_name.items()}
+    # class_names = set(class_id_to_name.values())
+    clip_descriptions = [f"a photo of {determine_prefix(convert_string(x))}" for x in class_id_to_name.values()]
+
+    def __init__(self, data_dir='sunrgbd', split='train', depth_transform='rgb', label_type='gt') -> None:
+        data_dir = 'dbs/sunrgbd'
+        self.sample_stack = {}
+        for modal in ['rgb', 'depth']:
+            self.sample_stack[modal] = glob(join(data_dir, split, modal, '*.jpg' if modal == 'rgb' else '*.png'))
+            assert len(self.sample_stack[modal]) > 0, f"No {modal} images found in {data_dir}/{split}/{modal}"
+            self.sample_stack[modal].sort()
+
+        for i in range(len(self.sample_stack['rgb'])):
+            assert splitext(basename(self.sample_stack['rgb'][i]))[0] == splitext(basename(self.sample_stack['depth'][i]))[0], f"RGB and depth images not matched: {self.sample_stack['rgb'][i]}, {self.sample_stack['depth'][i]}"
+
+        if split in ['train']:
+
+            self.clip_predictions_df = pd.read_csv(join(data_dir, 'clip_vitb32_prediction.csv'), index_col=0)
+            self.clip_labels = []
+            self.similarities = []
+            for file in self.sample_stack['rgb']:
+                self.clip_labels.append(int(self.clip_predictions_df.loc[file]['class_id']))
+                self.similarities.append(self.clip_predictions_df.loc[file]['similarity'])
+            self.clip_labels = np.array(self.clip_labels)
+            self.similarities = np.array(self.similarities)
+
+            confident_mask = self.similarities > 0.980
+            print(f"Confident samples ratio: {np.mean(confident_mask):.3f}")
+            self.clip_labels = self.clip_labels[confident_mask]
+            self.similarities = self.similarities[confident_mask]
+            self.sample_stack['rgb'] = np.array(self.sample_stack['rgb'])[confident_mask]
+            self.sample_stack['depth'] = np.array(self.sample_stack['depth'])[confident_mask]
+
+            self.shared_transform = A.Compose(
+                [
+                    A.RandomResizedCrop(height=224, width=224, scale=(0.08, 1.0), ratio=(0.75, 1.3333), interpolation=cv2.INTER_CUBIC),
+                    A.HorizontalFlip(p=0.5),
+                ],
+                additional_targets={'image_depth': 'image'},
+            )
+            self.rgb_transform = A.Compose([A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))])
+            if depth_transform == '01':
+                self.depth_transform = A.Compose([A.Normalize(mean=(0, 0, 0), std=(1, 1, 1))])
+            elif depth_transform == 'rgb':
+                self.depth_transform = A.Compose([A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))])
+            else:
+                raise NotImplementedError
+        elif split in ['test']:
+            self.shared_transform = A.Compose([A.Resize(224, 224, interpolation=cv2.INTER_CUBIC)], additional_targets={'image_depth': 'image'})
+            self.rgb_transform = A.Compose([A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))])
+            if depth_transform == '01':
+                self.depth_transform = A.Compose([A.Normalize(mean=(0, 0, 0), std=(1, 1, 1))])
+            elif depth_transform == 'rgb':
+                self.depth_transform = A.Compose([A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))])
+            else:
+                raise NotImplementedError
+        else:
+            raise NotImplementedError
+
+        self.label_type = label_type
+        if self.label_type == 'clip_vitb32':
+            self.clip_predictions_df = pd.read_csv(join(data_dir, 'clip_vitb32_prediction.csv'), index_col=0)
+
+    def _load_sample(self, index):
+        input_rgb = cv2.cvtColor(cv2.imread(self.sample_stack['rgb'][index]), cv2.COLOR_BGR2RGB)
+        input_depth = cv2.imread(self.sample_stack['depth'][index], cv2.IMREAD_GRAYSCALE)
+        return input_rgb, input_depth
+
+    def __getitem__(self, index):
+        input_rgb, input_depth = self._load_sample(index)
+
+        transformed_image = self.shared_transform(image=input_rgb, image_depth=input_depth)
+        image_rgb = self.rgb_transform(image=transformed_image['image'])
+        image_depth = self.depth_transform(image=np.repeat(transformed_image['image_depth'][:, :, np.newaxis], repeats=3, axis=-1))
+        image_depth_array = image_depth['image']
+        image_rgb_array = image_rgb['image']
+        image_rgb_array = np.transpose(image_rgb_array, (2, 0, 1))
+        image_depth_array = np.transpose(image_depth_array, (2, 0, 1))
+
+        if self.label_type == 'gt':              # ground truth labels
+            class_name = basename(self.sample_stack['rgb'][index]).split('__')[0]
+            class_id = self.class_name_to_id[class_name]
+            return image_rgb_array, image_depth_array, class_id
+        elif self.label_type == 'clip_vitb32':   # clip pseudo labels
+            class_id = self.clip_predictions_df.loc[basename(self.sample_stack['rgb'][index]), 'class_id']
+            similarity = self.clip_predictions_df.loc[basename(self.sample_stack['rgb'][index]), 'similarity']
+            return image_rgb_array, image_depth_array, [class_id, similarity]
+        else:
+            raise NotImplementedError
+
+
+    def __len__(self):
+        return len(self.sample_stack['rgb'])
+
+
+if __name__ == '__main__':
+    dataset_train = SUNRGBD(split='train', data_dir='../../dbs/sunrgbd', depth_transform='rgb', label_type='gt')
+    dataset_test = SUNRGBD(split='test', data_dir='../../dbs/sunrgbd', depth_transform='rgb')
+    print(f"Train: {len(dataset_train)}, Test: {len(dataset_test)}")
+    loader_train = DataLoader(dataset_train, batch_size=32, shuffle=True, num_workers=4)
+    for image_rgb_array, image_depth_array, class_id in loader_train:
+        pass                                     # ([32, 3, 224, 224]), ([32, 224, 224]), ([32])
+        break

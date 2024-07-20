@@ -1,0 +1,16 @@
+quantization:
+  method: jacob # jacob | disable
+
+  weight:
+    num_bits: 8
+    axis: per_tensor
+    calib_method: max
+  
+  activation:
+    num_bits: 8
+    axis: per_tensor
+    calib_method: max
+
+  calibration:
+    num_batch: 2
+    modal: rgbd
