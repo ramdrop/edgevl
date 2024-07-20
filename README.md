@@ -16,8 +16,8 @@
 
 ## News
  - [2024-03-15] Our preprint paper is available on  [arXiv](https://arxiv.org/abs/2403.04908).
- - [2024-07-01] Our paper is accepted by [ECCV 2024](https://eccv2024.ecva.net/). 🎉
- - [2024-07-01] Training and testing code is released.
+ - [2024-07-02] Our paper is accepted by [ECCV 2024](https://eccv2024.ecva.net/). 🎉
+ - [2024-07-20] Training and testing code is released.
 
 
 ## Dataset
