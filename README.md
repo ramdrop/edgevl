@@ -5,6 +5,7 @@
 
 
 [![arXiv](https://img.shields.io/badge/arXiv-2403.04908-b31b1b.svg)](https://arxiv.org/abs/2403.04908)
+[![YouTube](https://img.shields.io/youtube/views/2E2XEPTFOKE?label=YouTube&style=flat)](https://www.youtube.com/watch?v=2E2XEPTFOKE&ab_channel=KaiwenCai)
 
 <p align="left">
 <img src='docs/overview.png' width="900">
