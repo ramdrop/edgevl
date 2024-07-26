@@ -47,6 +47,22 @@ RUN_NAME=[run_name]; QUANT_CONFIG=jacob; TEST_MODAL=depth
 python run.py --phase=test --run_name=${RUN_NAME} --quant_config=quantization_configs/${QUANT_CONFIG}.yaml --test_modal=${TEST_MODAL} --static_or_dynamic=static 
 ```
 
+## Inference with a Pretrained Model
+You might want to download the pretrained weights from Hugging Face:
+```
+cd edgevl
+git lfs install
+git clone https://huggingface.co/ramfais/edgevl_weights
+mkdir logs && mv edgevl_weights/* logs
+```
+
+Then select a model for inference by setting `RUN_NAME=datt_scannet|datt_eurosat|swint_scannet|swint_eurosat|vits_scannet|vits_eurosat`
+```
+RUN_NAME=datt_scannet; QUANT_CONFIG=jacob; TEST_MODAL=depth
+python run.py --phase=test --run_name=${RUN_NAME} --quant_config=quantization_configs/${QUANT_CONFIG}.yaml --test_modal=${TEST_MODAL} --static_or_dynamic=static 
+```
+
+
 ## Deployment
 👉 [To deploy on edge devices](./docs/deploy.md)
 
