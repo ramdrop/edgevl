@@ -8,6 +8,8 @@
 [![YouTube](https://img.shields.io/youtube/views/2E2XEPTFOKE?label=YouTube&style=flat)](https://www.youtube.com/watch?v=2E2XEPTFOKE&ab_channel=KaiwenCai)
 [![Project Page](https://img.shields.io/badge/Project%20Page-green?color=purple)](https://ramdrop.github.io/edgevl.html)
 
+👉 [Download the supplementary material of the paper](https://www.dropbox.com/scl/fi/7heb3gb78jzfc316aqw7d/supplementary.pdf?rlkey=1sr9lhdq9vydw5kfmln6uw48o&st=xe7smhee&dl=0)
+
 <p align="left">
 <img src='docs/overview.png' width="900">
 </p>
